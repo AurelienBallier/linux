@@ -29,6 +29,19 @@ struct cpu {
 	struct device dev;
 };
 
+struct cpu_pstate_pwr {
+	unsigned int freq;
+	uint32_t power;
+};
+
+struct cpu_pwr_stats {
+	int cpu;
+	long temp;
+	struct cpu_pstate_pwr *ptable;
+	bool throttling;
+	int len;
+};
+
 extern void boot_cpu_init(void);
 extern void boot_cpu_hotplug_init(void);
 extern void cpu_init(void);
@@ -75,7 +88,24 @@ extern ssize_t arch_cpu_release(const char *, size_t);
 #define CPU_DEAD		0x0007 /* CPU dead */
 #define CPU_DEAD_FROZEN		0x0008 /* CPU timed out on unplug */
 #define CPU_POST_DEAD		0x0009 /* CPU successfully unplugged */
+#define CPU_STARTING		0x000A /* CPU (unsigned)v soon running.
+					* Called on the new cpu, just before
+					* enabling interrupts. Must not sleep,
+					* must not fail */
 #define CPU_BROKEN		0x000B /* CPU did not die properly */
+
+/* Used for CPU hotplug events occurring while tasks are frozen due to a suspend
+ * operation in progress
+ */
+#define CPU_TASKS_FROZEN	0x0010
+
+#define CPU_ONLINE_FROZEN	(CPU_ONLINE | CPU_TASKS_FROZEN)
+#define CPU_UP_PREPARE_FROZEN	(CPU_UP_PREPARE | CPU_TASKS_FROZEN)
+#define CPU_UP_CANCELED_FROZEN	(CPU_UP_CANCELED | CPU_TASKS_FROZEN)
+#define CPU_DOWN_PREPARE_FROZEN	(CPU_DOWN_PREPARE | CPU_TASKS_FROZEN)
+#define CPU_DOWN_FAILED_FROZEN	(CPU_DOWN_FAILED | CPU_TASKS_FROZEN)
+#define CPU_DYING_FROZEN	(CPU_DYING | CPU_TASKS_FROZEN)
+#define CPU_STARTING_FROZEN	(CPU_STARTING | CPU_TASKS_FROZEN)
 
 #ifdef CONFIG_SMP
 extern bool cpuhp_tasks_frozen;
@@ -138,6 +168,7 @@ static inline int disable_nonboot_cpus(void) { return 0; }
 static inline void enable_nonboot_cpus(void) {}
 #endif /* !CONFIG_PM_SLEEP_SMP */
 
+struct cpu_pwr_stats *get_cpu_pwr_stats(void);
 void cpu_startup_entry(enum cpuhp_state state);
 
 void cpu_idle_poll_ctrl(bool enable);

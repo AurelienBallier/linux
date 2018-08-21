@@ -149,6 +149,7 @@ struct regulator_ops {
 
 	/* enumerate supported voltages */
 	int (*list_voltage) (struct regulator_dev *, unsigned selector);
+	int (*list_corner_voltage)(struct regulator_dev *, int corner);
 
 	/* get/set regulator voltage */
 	int (*set_voltage) (struct regulator_dev *, int min_uV, int max_uV,

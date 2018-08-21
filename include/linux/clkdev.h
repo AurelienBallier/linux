@@ -23,6 +23,7 @@ struct clk_lookup {
 	const char		*dev_id;
 	const char		*con_id;
 	struct clk		*clk;
+	int			of_idx;
 	struct clk_hw		*clk_hw;
 };
 

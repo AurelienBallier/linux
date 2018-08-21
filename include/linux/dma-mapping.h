@@ -70,6 +70,12 @@
  */
 #define DMA_ATTR_PRIVILEGED		(1UL << 9)
 
+#define DMA_ATTR_STRONGLY_ORDERED	(1UL << 10)
+#define DMA_ATTR_SKIP_ZEROING		(1UL << 11)
+#define DMA_ATTR_NO_DELAYED_UNMAP	(1UL << 12)
+#define DMA_ATTR_EXEC_MAPPING		(1UL << 13)
+#define DMA_ATTR_MAX				(1UL << 14)
+
 /*
  * A dma_addr_t can hold any valid DMA or bus address for the platform.
  * It can be given to a device to use as a DMA source or target.  A CPU cannot
@@ -130,6 +136,10 @@ struct dma_map_ops {
 			enum dma_data_direction direction);
 	int (*mapping_error)(struct device *dev, dma_addr_t dma_addr);
 	int (*dma_supported)(struct device *dev, u64 mask);
+	void *(*remap)(struct device *dev, void *cpu_addr, dma_addr_t handle,
+			size_t size, unsigned int attrs);
+	void (*unremap)(struct device *dev, void *remapped_address,
+			size_t size);
 #ifdef ARCH_HAS_DMA_GET_REQUIRED_MASK
 	u64 (*get_required_mask)(struct device *dev);
 #endif
@@ -220,6 +230,39 @@ static inline void set_dma_ops(struct device *dev,
 static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
 {
 	return NULL;
+}
+#endif
+
+#ifndef CONFIG_NO_DMA
+static inline void *dma_remap(struct device *dev, void *cpu_addr,
+		dma_addr_t dma_handle, size_t size, unsigned int attrs)
+{
+	const struct dma_map_ops *ops = get_dma_ops(dev);
+	BUG_ON(!ops);
+
+	if (!ops->remap) {
+		WARN_ONCE(1, "Remap function not implemented for %pS\n",
+				ops->remap);
+		return NULL;
+	}
+
+	return ops->remap(dev, cpu_addr, dma_handle, size, attrs);
+}
+
+
+static inline void dma_unremap(struct device *dev, void *remapped_addr,
+				size_t size)
+{
+	const struct dma_map_ops *ops = get_dma_ops(dev);
+	BUG_ON(!ops);
+
+	if (!ops->unremap) {
+		WARN_ONCE(1, "unremap function not implemented for %pS\n",
+				ops->unremap);
+		return;
+	}
+
+	return ops->unremap(dev, remapped_addr, size);
 }
 #endif
 
