@@ -1,0 +1,688 @@
+/*
+ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "msm8909.dtsi"
+#include "msm8909-pinctrl.dtsi"
+#include "msm8909w-gpu.dtsi"
+#include "msm8909-pm8916.dtsi"
+/*#include "msm8909-pm8916-mtp.dtsi"*/
+#include "msm8909w.dtsi"
+#include "apq8009w-memory.dtsi"
+#include "apq8009w-memory.dtsi"
+
+#include "apq8009-sbc-camera-sensor.dtsi"
+
+&blsp1_uart1 {
+	status = "ok";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart_console_sleep>;
+};
+
+&qcom_rng {
+	status = "ok";
+};
+
+&qcom_crypto {
+	status = "ok";
+};
+
+&qcom_cedev {
+	status = "ok";
+};
+
+&qcom_seecom {
+	status = "ok";
+};
+
+&qcom_tzlog {
+	status = "ok";
+};
+
+&soc {
+	qcom,msm-ssc-sensors {
+		compatible = "qcom,msm-ssc-sensors";
+	};
+
+	dc_12v: dc_12v {
+		compatible = "regulator-fixed";
+		regulator-name = "dc_12v";
+		regulator-min-microvolt = <12000000>;
+		regulator-max-microvolt = <12000000>;
+		status = "ok";
+		regulator-always-on;
+		enable-active-high;
+	};
+
+	sbc_vreg_5p0: sbc_vreg_5p0 {
+		compatible = "regulator-fixed";
+		regulator-name = "sbc_vreg_5p0";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		status = "ok";
+		enable-active-high;
+		vin-supply = <&dc_12v>;
+	};
+
+	vbus_otg_vreg: vbus_otg_vreg {
+		compatible = "regulator-fixed";
+		regulator-name = "vbus_otg_vreg";
+		gpio = <&msm_gpio 74 0>;
+		vin-supply = <&sbc_vreg_5p0>;
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		input-name = "gpio-keys";
+		pinctrl-names = "tlmm_gpio_key_active","tlmm_gpio_key_suspend";
+		pinctrl-0 = <&gpio_key_active>;
+		pinctrl-1 = <&gpio_key_suspend>;
+
+		vol_up {
+			label = "volume_up";
+			gpios = <&msm_gpio 90 0x1>;
+			linux,input-type = <1>;
+			linux,code = <115>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+		};
+
+		back {
+			label = "key_back";
+			gpios = <&msm_gpio 87 0x1>;
+			linux,input-type = <1>;
+			linux,code = <158>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+		};
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		keypad-backlight {
+			gpios = <&msm_gpio 49 0>;
+			label = "button-backlight";
+			linux,default-trigger = "timer";
+			active-delay = <500>;
+			inactive-delay = <500>;
+		};
+
+		user2_led {
+			gpios = <&msm_gpio 69 0>;
+			label = "user2_led";
+			linux,default-trigger = "none";
+			default-state = "off";
+			retain-state-suspended;
+		};
+	};
+
+	audio_codec: sound {
+		compatible = "qcom,msm8952-audio-codec";
+		qcom,model = "msm8909-pm8916-snd-card";
+		reg = <0x7702000 0x4>,
+				<0x7702004 0x4>,
+				<0x7702008 0x4>;
+		reg-names = "csr_gp_io_mux_mic_ctl",
+				"csr_gp_io_mux_spkr_ctl",
+				"csr_gp_io_lpaif_pri_pcm_pri_mode_muxsel";
+
+		qcom,msm-snd-card-id = <0>;
+		qcom,msm-codec-type = "internal";
+		qcom,msm-ext-pa = "primary";
+		qcom,msm-mclk-freq = <9600000>;
+		qcom,msm-mbhc-hphl-swh = <0>;
+		qcom,msm-mbhc-gnd-swh = <0>;
+		qcom,msm-hs-micbias-type = "external";
+		qcom,msm-micbias1-ext-cap;
+		qcom,split-a2dp;
+		qcom,msm-afe-clk-ver = <1>;
+		qcom,audio-routing =
+				"RX_BIAS", "MCLK",
+				"SPK_RX_BIAS", "MCLK",
+				"INT_LDO_H", "MCLK",
+				"MIC BIAS Internal1", "Handset Mic",
+				"MIC BIAS Internal2", "Headset Mic",
+				"MIC BIAS Internal1", "Secondary Mic",
+				"AMIC1", "MIC BIAS Internal1",
+				"AMIC2", "MIC BIAS Internal2",
+				"AMIC3", "MIC BIAS Internal1";
+		qcom,msm-gpios =
+				"pri_i2s",
+				"us_eu_gpio";
+		qcom,pinctrl-names =
+				"all_off",
+				"pri_i2s_act",
+				"us_eu_gpio_act",
+				"pri_i2s_us_eu_gpio_act";
+		pinctrl-names =
+				"all_off",
+				"pri_i2s_act",
+				"us_eu_gpio_act",
+				"pri_i2s_us_eu_gpio_act";
+		pinctrl-0 = <&cdc_pdm_lines_sus &cross_conn_det_sus>;
+		pinctrl-1 = <&cdc_pdm_lines_act &cross_conn_det_sus>;
+		pinctrl-2 = <&cdc_pdm_lines_sus &cross_conn_det_act>;
+		pinctrl-3 = <&cdc_pdm_lines_act &cross_conn_det_act>;
+		asoc-platform = <&pcm0>, <&pcm1>, <&pcm2>, <&voip>, <&voice>,
+				<&loopback>, <&compress>, <&hostless>,
+				<&afe>, <&lsm>, <&routing>, <&lpa>,
+				<&voice_svc>;
+		asoc-platform-names = "msm-pcm-dsp.0", "msm-pcm-dsp.1",
+				"msm-pcm-dsp.2", "msm-voip-dsp",
+				"msm-pcm-voice", "msm-pcm-loopback",
+				"msm-compress-dsp", "msm-pcm-hostless",
+				"msm-pcm-afe", "msm-lsm-client",
+				"msm-pcm-routing", "msm-pcm-lpa",
+				"msm-voice-svc";
+		asoc-cpu = <&dai_pri_auxpcm>,
+				<&dai_mi2s0>, <&dai_mi2s1>, <&dai_mi2s2>,
+				<&dai_mi2s3>, <&dai_mi2s5>, <&dai_mi2s6>,
+				<&bt_sco_rx>, <&bt_sco_tx>, <&bt_a2dp_rx>,
+				<&int_fm_rx>, <&int_fm_tx>, <&afe_pcm_rx>,
+				<&afe_pcm_tx>, <&afe_proxy_rx>, <&afe_proxy_tx>,
+				<&incall_record_rx>, <&incall_record_tx>,
+				<&incall_music_rx>, <&incall_music_2_rx>;
+		asoc-cpu-names = "msm-dai-q6-auxpcm.1",
+				"msm-dai-q6-mi2s.0", "msm-dai-q6-mi2s.1",
+				"msm-dai-q6-mi2s.2", "msm-dai-q6-mi2s.3",
+				"msm-dai-q6-mi2s.5", "msm-dai-q6-mi2s.6",
+				"msm-dai-q6-dev.12288", "msm-dai-q6-dev.12289",
+				"msm-dai-q6-dev.12290", "msm-dai-q6-dev.12292",
+				"msm-dai-q6-dev.12293", "msm-dai-q6-dev.224",
+				"msm-dai-q6-dev.225", "msm-dai-q6-dev.241",
+				"msm-dai-q6-dev.240", "msm-dai-q6-dev.32771",
+				"msm-dai-q6-dev.32772", "msm-dai-q6-dev.32773",
+				"msm-dai-q6-dev.32770";
+		asoc-codec = <&stub_codec>, <&pm8916_tombak_dig>;
+		asoc-codec-names = "msm-stub-codec.1", "cajon_codec";
+	};
+};
+
+&usb_otg {
+	interrupts = <0 134 0>,<0 140 0>,<0 136 0>;
+	interrupt-names = "core_irq", "async_irq", "phy_irq";
+
+	qcom,hsusb-otg-mode = <3>;
+	vbus_otg-supply = <&vbus_otg_vreg>;
+};
+
+&sdhc_1 {
+	vdd-supply = <&pm8916_l8>;
+	qcom,vdd-voltage-level = <2900000 2900000>;
+	qcom,vdd-current-level = <200 400000>;
+
+	vdd-io-supply = <&pm8916_l5>;
+	qcom,vdd-io-always-on;
+	qcom,vdd-io-lpm-sup;
+	qcom,vdd-io-voltage-level = <1800000 1800000>;
+	qcom,vdd-io-current-level = <200 60000>;
+
+	pinctrl-names = "active", "sleep";
+	pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on>;
+	pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off>;
+
+	qcom,bus-speed-mode = "HS200_1p8v", "DDR_1p8v";
+	qcom,nonremovable;
+
+	status = "ok";
+};
+
+&sdhc_2 {
+	#address-cells = <0>;
+	interrupt-parent = <&sdhc_2>;
+	interrupts = <0 1 2>;
+	#interrupt-cells = <1>;
+	interrupt-map-mask = <0xffffffff>;
+	interrupt-map = <0 &intc 0 125 0
+			1 &intc 0 221 0
+			2 &msm_gpio 38 0>;
+	interrupt-names = "hc_irq", "pwr_irq", "status_irq";
+	cd-gpios = <&msm_gpio 38 0x1>;
+
+	vdd-supply = <&pm8916_l11>;
+	qcom,vdd-voltage-level = <1800000 2950000>;
+	qcom,vdd-current-level = <15000 400000>;
+
+	vdd-io-supply = <&pm8916_l12>;
+	qcom,vdd-io-voltage-level = <1800000 2950000>;
+	qcom,vdd-io-current-level = <200 50000>;
+
+	pinctrl-names = "active", "sleep";
+	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
+	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
+
+	status = "ok";
+};
+
+&i2c_3 {
+	status = "disabled";
+};
+
+&i2c_4 {
+	smb1357_otg_vreg: smb1357-charger@1c {
+		compatible = "qcom,smb1357-charger";
+		reg = <0x1c>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <58 4>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&smb_int_default>;
+
+		qcom,bmd-algo-disabled;
+		qcom,float-voltage-mv = <4200>;
+		qcom,iterm-ma = <150>;
+		qcom,charging-timeout = <768>;
+		qcom,recharge-thresh-mv = <50>;
+		regulator-name = "smb1357_otg_vreg";
+		qcom,soft-vfloat-comp-disabled;
+		qcom,thermal-mitigation = <1500 700 600 0>;
+
+		qcom,bms-psy-name = "bms";
+
+		qcom,dc-psy-type = "Mains";
+		qcom,dc-psy-ma = <1000>;
+
+		qcom,inhibit-disabled;
+		qcom,bms-controlled-charging;
+
+		/* The maximum fastcharge current */
+		/* TODO: test first before increasing it */
+		qcom,fastchg-ma = <650>;
+
+		status = "ok";
+	};
+
+	st-fg@70 {
+		compatible = "st,stc3117";
+		reg = <0x70>;
+
+		st,rbatt-mohm = <25>;
+		st,nom-capacity-mah = <3200>;
+		st,rsense-mohm = <10>;
+		st,float-voltage-mv = <4200>;
+
+		st,alarm-soc = <10>;
+		st,alarm-voltage-mv = <3684>;
+
+		st,term-current-ma = <50>;
+		st,relax-current-ma = <150>;
+
+		st,adaptive-capacity-tbl =
+					/bits/ 16 <0x00 0x00 0x00 0x05 0x0d 0x2a 0x47>;
+
+		st,ocv-tbl = /bits/ 16 <3400 3478 3631 3684 3703 3724
+					3744 3759 3782 3808 3850 3884
+					3922 3984 4066 4167>;
+		st,soc-tbl = /bits/ 8 <0 3 6 10 15 20 25 30 40 50 60 65
+					70 80 90 100>;
+		st,vmtemp-tbl = /bits/ 16 <85 90 100 160 320 440 840>;
+		st,temp-tbl = /bits/ 16 <60 40 25 10 0 (-10) (-20)>;
+
+		st,empty-soc-uv = <3300000>;
+		qcom,fg-vadc = <&pm8916_vadc>;
+		qcom,fg-adc_tm = <&pm8916_adc_tm>;
+
+		st,batt-id-disabled;
+	};
+};
+
+&i2c_5 {
+	adv7533@3d {
+		compatible = "adv7533";
+		reg = <0x3d>;
+		adv7533,video-mode = <2>; /* 2 = 720p */
+		adv7533,main-addr = <0x3D>;
+		adv7533,cec-dsi-addr = <0x3C>;
+		adv7533,audio = <1>;
+		pinctrl-names = "pmx_adv7533_active", "pmx_adv7533_suspend";
+		pinctrl-0 = <&adv7533_int_active &adv7533_hpd_int_active &adv7533_switch_active>;
+		pinctrl-1 = <&adv7533_int_suspend &adv7533_hpd_int_suspend &adv7533_switch_suspend>;
+		adv7533,irq-gpio = <&msm_gpio 33 0x2002>;
+		adv7533,hpd-irq-gpio = <&msm_gpio 71 0x2003>;
+		adv7533,switch-gpio = <&msm_gpio 110 0x0>;
+		adv7533,invert-sw;
+		adv7533,cont-splash-enabled;
+	};
+
+	goodix_ts@5d {
+		compatible = "goodix,gt9xx";
+		reg = <0x5d>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <13 0x2008>;
+		vdd_ana-supply = <&pm8916_l17>;
+		vcc_i2c-supply = <&pm8916_l6>;
+		pinctrl-names = "pmx_ts_active","pmx_ts_suspend","pmx_ts_release";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+		pinctrl-2 = <&ts_release>;
+		reset-gpios = <&msm_gpio 12 0x00>;
+		irq-gpios = <&msm_gpio 13 0x00>;
+		touchscreen-max-id = <5>;
+		touchscreen-size-x = <480>;
+		touchscreen-size-y = <854>;
+		goodix,driver-send-cfg = <1>;
+		goodix,int-sync = <1>;
+		goodix,power-off-sleep = <1>;
+		goodix,cfg-group0 = [
+			42 D0 02 00 05 05 75 01 01 0F 24
+			0F 64 3C 03 05 00 00 00 02 00 00
+			00 16 19 1C 14 8C 0E 0E 24 00 31
+			0D 00 00 00 83 33 1D 00 41 00 00
+			00 00 00 08 0A 00 2B 1C 3C 94 D5
+			03 08 00 00 04 93 1E 00 82 23 00
+			74 29 00 69 2F 00 5F 37 00 5F 20
+			40 60 00 F0 40 30 55 50 27 00 00
+			00 00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 00 00 00 14 19 00 00
+			50 50 02 04 06 08 0A 0C 0E 10 12
+			14 16 18 1A 1C 00 00 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00 1D
+			1E 1F 20 21 22 24 26 28 29 2A 1C
+			18 16 14 13 12 10 0F 0C 0A 08 06
+			04 02 00 00 00 00 00 00 00 00 00
+			00 00 00 00 00 00 00 00 9C 01];
+		goodix,cfg-group2 = [
+			5A E0 01 56 03 0A 05 01 01 0F 23
+			0F 50 32 03 05 00 00 FF 7F 01 00
+			0F 18 1A 1E 14 89 29 0A 59 5B 09
+			06 03 0A 00 02 32 11 55 01 00 00
+			00 00 00 32 00 00 2B 2D 67 94 C5
+			02 07 00 00 04 DD 31 00 C0 39 00
+			A3 44 00 8C 50 00 78 5F 00 78 00
+			00 00 00 F0 4A 3A FF FF 27 00 1E
+			02 32 1E 02 05 2D 1E 19 00 00 01
+			0F 0F 03 04 10 42 F8 0F 19 00 00
+			46 32 08 0A 0C 0E 10 12 14 16 18
+			1A 00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 FF FF FF FF 00 00 2A
+			29 28 24 22 20 1F 1E 1D 0E 0C 0A
+			08 06 05 04 02 00 00 00 00 00 00
+			00 00 00 00 FF FF FF FF FF FF FF
+			FF FF FF FF FF FF FF FF 74 01];
+	};
+};
+
+#include "dsi-adv7533-720p.dtsi"
+&dsi_adv7533_720p {
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
+	qcom,mdss-dsi-panel-destination = "display_1";
+};
+
+#include "dsi-panel-osd-disp-fwvga-video.dtsi"
+&dsi_osd_disp_fwvga_video {
+	qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 2 0>;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&mdss_mdp {
+	qcom,mdss-pref-prim-intf = "dsi";
+};
+
+&mdss_dsi {
+	vdda-supply = <&pm8916_l2>;
+	vddio-supply = <&pm8916_l6>;
+};
+
+&mdss_dsi0 {
+	qcom,dsi-pref-prim-pan = <&dsi_adv7533_720p>;
+
+	pinctrl-names = "mdss_default", "mdss_sleep";
+	pinctrl-0 = <&mdss_dsi_active>;
+	pinctrl-1 = <&mdss_dsi_suspend>;
+
+	qcom,platform-reset-gpio = <&msm_gpio 25 0>;
+	qcom,platform-bklight-en-gpio = <&msm_gpio 37 0>;
+
+	vdd-supply = <&pm8916_l17>;
+	vddio-supply = <&pm8916_l6>;
+	vddmux-supply = <&pm8916_l4>;
+
+	qcom,panel-supply-entries {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		qcom,panel-supply-entry@0 {
+			reg = <0>;
+			qcom,supply-name = "vdd";
+			qcom,supply-min-voltage = <2850000>;
+			qcom,supply-max-voltage = <2850000>;
+			qcom,supply-enable-load = <100000>;
+			qcom,supply-disable-load = <100>;
+		};
+
+		qcom,panel-supply-entry@1 {
+			reg = <1>;
+			qcom,supply-name = "vddio";
+			qcom,supply-min-voltage = <1800000>;
+			qcom,supply-max-voltage = <1800000>;
+			qcom,supply-enable-load = <100000>;
+			qcom,supply-disable-load = <100>;
+		};
+
+		qcom,panel-supply-entry@2 {
+			reg = <2>;
+			qcom,supply-name = "vddmux";
+			qcom,supply-min-voltage = <1800000>;
+			qcom,supply-max-voltage = <1800000>;
+			qcom,supply-enable-load = <100000>;
+			qcom,supply-disable-load = <100>;
+		};
+	};
+};
+
+&msm_gpio {
+	/delete-node/ tlmm_gpio_key;
+	gpio_key_active: gpio_key_active {
+		mux {
+			pins = "gpio90";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio90";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	gpio_key_suspend: gpio_key_suspend {
+		mux {
+			pins = "gpio90";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio90";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	/delete-node/ tpiu_seta_14;
+	/delete-node/ smb_int_pin;
+	smb_int_default: smb_int_default {
+		mux {
+			pins = "gpio58";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio58";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	smb_susp_default: smb_susp_default {
+		mux {
+			pins = "gpio58";
+			function ="gpio";
+		};
+		config {
+			pins = "gpio58";
+			drive-strength = <2>;
+			bias-pull-up;
+			output-high;
+		};
+	};
+
+	/delete-node/ tpiu_seta_13;
+	adv7533_int_active: adv7533_int_active {
+		mux {
+			pins = "gpio33";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio33";
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+	};
+
+	adv7533_int_suspend: adv7533_int_suspend {
+		mux {
+			pins = "gpio33";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio33";
+			drive-strength = <16>;
+			bias-pull-down;
+		};
+	};
+
+	adv7533_hpd_int_active: adv7533_hpd_int_active {
+		mux {
+			pins = "gpio71";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio71";
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+	};
+	adv7533_hpd_int_suspend: adv7533_hpd_int_suspend {
+		mux {
+			pins = "gpio71";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio71";
+			drive-strength = <16>;
+			bias-pull-down;
+		};
+	};
+
+	adv7533_switch_active: adv7533_switch_active {
+		mux {
+			pins = "gpio110";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio110";
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+	};
+	adv7533_switch_suspend: adv7533_switch_suspend {
+		mux {
+			pins = "gpio110";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio110";
+			drive-strength = <16>;
+			bias-pull-down;
+		};
+	};
+};
+
+&pm8916_mpps {
+	mpp@a000 { /* MPP 1 */
+		/* VDD_PX */
+		status = "disabled";
+	};
+
+	mpp@a100 { /* MPP 2 */
+		/* Backlight PWM */
+		qcom,mode = <1>;		/* Digital output */
+		qcom,invert = <0>;		/* Disable invert */
+		qcom,src-sel = <4>;		/* DTEST1 */
+		qcom,vin-sel = <0>;		/* VPH_PWR */
+		qcom,master-en = <1>;	/* Enable MPP */
+		status = "ok";
+	};
+
+	mpp@a200 { /* MPP 3 */
+		status = "disabled";
+	};
+
+	mpp@a300 { /* MPP 4 */
+		status = "disabled";
+	};
+};
+
+&pm8916_gpios {
+	gpio@c000 { /* GPIO 1 */
+		/* Battery UICC Alarm */
+		status = "disabled";
+	};
+
+	gpio@c100 { /* GPIO 2 */
+		status = "disabled";
+	};
+
+	gpio@c200 { /* GPIO 3 */
+		/* External regulator control for WTR */
+		status = "disabled";
+	};
+
+	gpio@c300 { /* GPIO 4 */
+		/* External regulator control for APC */
+		status = "disabled";
+	};
+};
+
+&pm8916_chg {
+	status = "disabled";
+};
+
+&pm8916_bms {
+	status = "disabled";
+};
+
+
+/* TODO : *******************************************************************/
+/* CoreSight */
+&tpiu {
+	status = "disabled"; /* TODO: remove this line? or check pinctrl-x */
+	pinctrl-names = "sdcard", "trace", "swduart",
+			"swdtrc", "jtag", "spmi";
+	/* NIDnT */
+	pinctrl-0 = <&qdsd_clk_sdcard &qdsd_cmd_sdcard
+				&qdsd_data0_sdcard &qdsd_data1_sdcard
+				&qdsd_data2_sdcard &qdsd_data3_sdcard>;
+	pinctrl-1 = <&qdsd_clk_trace &qdsd_cmd_trace
+				&qdsd_data0_trace &qdsd_data1_trace
+				&qdsd_data2_trace &qdsd_data3_trace>;
+	pinctrl-2 = <&qdsd_cmd_swduart &qdsd_data0_swduart
+				&qdsd_data1_swduart &qdsd_data2_swduart
+				&qdsd_data3_swduart>;
+	pinctrl-3 = <&qdsd_clk_swdtrc &qdsd_cmd_swdtrc
+				&qdsd_data0_swdtrc &qdsd_data1_swdtrc
+				&qdsd_data2_swdtrc &qdsd_data3_swdtrc>;
+	pinctrl-4 = <&qdsd_cmd_jtag &qdsd_data0_jtag
+				&qdsd_data1_jtag &qdsd_data2_jtag
+				&qdsd_data3_jtag>;
+	pinctrl-5 = <&qdsd_clk_spmi &qdsd_cmd_spmi
+				&qdsd_data0_spmi &qdsd_data3_spmi>;
+};

@@ -94,6 +94,8 @@
 
 #ifndef __ASSEMBLY__
 void vfp_disable(void);
+int vfp_pm_suspend(void);
+void vfp_pm_resume(void);
 #endif
 
 #endif /* __ASM_VFP_H */

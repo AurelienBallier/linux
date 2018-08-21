@@ -16,6 +16,11 @@ ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
 CFLAGS_core.o := $(PROFILING) -fno-omit-frame-pointer
 endif
 
+ifdef CONFIG_SCHED_QHMP
+obj-y += qhmp_core.o qhmp_fair.o qhmp_rt.o
+else
+obj-y += core.o fair.o rt.o
+endif
 obj-y += core.o loadavg.o clock.o cputime.o
 obj-y += idle.o fair.o rt.o deadline.o
 obj-y += wait.o wait_bit.o swait.o completion.o

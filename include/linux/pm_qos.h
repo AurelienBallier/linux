@@ -46,6 +46,7 @@ enum pm_qos_flags_status {
 
 struct pm_qos_request {
 	struct plist_node node;
+	struct cpumask cpus_affine;
 	int pm_qos_class;
 	struct delayed_work work; /* for pm_qos_update_request_timeout */
 };
@@ -85,6 +86,7 @@ enum pm_qos_type {
 struct pm_qos_constraints {
 	struct plist_head list;
 	s32 target_value;	/* Do not change to 64 bit */
+	s32 target_per_cpu[NR_CPUS];
 	s32 default_value;
 	s32 no_constraint_value;
 	enum pm_qos_type type;
