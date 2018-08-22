@@ -522,7 +522,7 @@ static void pll_8996_calc_vco_count(struct dsi_pll_db *pdb,
 	struct dsi_pll_input *pin = &pdb->in;
 	struct dsi_pll_output *pout = &pdb->out;
 	s64 data;
-	u32 cnt;
+	s64 cnt;
 
 	data = fref * pin->vco_measure_time;
 	do_div(data, 1000000);

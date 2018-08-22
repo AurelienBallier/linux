@@ -35,7 +35,7 @@ static int hotplug_rtb_callback(struct notifier_block *nfb,
 	case CPU_STARTING:
 		uncached_logk(LOGK_HOTPLUG, (void *)(cpudata | this_cpumask));
 		break;
-	case CPU_DYING:
+	case CPU_DEAD_FROZEN:
 		uncached_logk(LOGK_HOTPLUG, (void *)(cpudata & ~this_cpumask));
 		break;
 	default:

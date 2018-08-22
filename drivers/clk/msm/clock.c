@@ -313,7 +313,7 @@ void __clk_post_reparent(struct clk *c, struct clk *old, unsigned long *flags)
 		clk_unprepare(old);
 }
 
-int clk_prepare(struct clk *clk)
+/*int clk_prepare(struct clk *clk)
 {
 	int ret = 0;
 	struct clk *parent;
@@ -354,12 +354,12 @@ err_prepare_depends:
 	clk_unprepare(parent);
 	goto out;
 }
-EXPORT_SYMBOL(clk_prepare);
+EXPORT_SYMBOL(clk_prepare);*/
 
 /*
  * Standard clock functions defined in include/linux/clk.h
  */
-int clk_enable(struct clk *clk)
+/*int clk_enable(struct clk *clk)
 {
 	int ret = 0;
 	unsigned long flags;
@@ -404,9 +404,9 @@ err_enable_parent:
 	spin_unlock_irqrestore(&clk->lock, flags);
 	return ret;
 }
-EXPORT_SYMBOL(clk_enable);
+EXPORT_SYMBOL(clk_enable);*/
 
-void clk_disable(struct clk *clk)
+/*void clk_disable(struct clk *clk)
 {
 	const char *name;
 	unsigned long flags;
@@ -434,9 +434,9 @@ void clk_disable(struct clk *clk)
 out:
 	spin_unlock_irqrestore(&clk->lock, flags);
 }
-EXPORT_SYMBOL(clk_disable);
+EXPORT_SYMBOL(clk_disable);*/
 
-void clk_unprepare(struct clk *clk)
+/*void clk_unprepare(struct clk *clk)
 {
 	const char *name;
 
@@ -464,7 +464,7 @@ void clk_unprepare(struct clk *clk)
 out:
 	mutex_unlock(&clk->prepare_lock);
 }
-EXPORT_SYMBOL(clk_unprepare);
+EXPORT_SYMBOL(clk_unprepare);*/
 
 int clk_reset(struct clk *clk, enum clk_reset_action action)
 {
@@ -635,7 +635,7 @@ int msm_clk_notif_unregister(struct clk *clk, struct notifier_block *nb)
 	return ret;
 }
 
-unsigned long clk_get_rate(struct clk *clk)
+/*unsigned long clk_get_rate(struct clk *clk)
 {
 	if (IS_ERR_OR_NULL(clk))
 		return 0;
@@ -645,9 +645,9 @@ unsigned long clk_get_rate(struct clk *clk)
 
 	return clk->ops->get_rate(clk);
 }
-EXPORT_SYMBOL(clk_get_rate);
+EXPORT_SYMBOL(clk_get_rate);*/
 
-int clk_set_rate(struct clk *clk, unsigned long rate)
+/*int clk_set_rate(struct clk *clk, unsigned long rate)
 {
 	unsigned long start_rate;
 	int rc = 0;
@@ -662,7 +662,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 
 	mutex_lock(&clk->prepare_lock);
 
-	/* Return early if the rate isn't going to change */
+	// Return early if the rate isn't going to change
 	if (clk->rate == rate && !(clk->flags & CLKFLAG_NO_RATE_CACHE))
 		goto out;
 
@@ -684,7 +684,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 			goto abort_set_rate;
 	}
 
-	/* Enforce vdd requirements for target frequency. */
+	// Enforce vdd requirements for target frequency.
 	if (clk->prepare_count) {
 		rc = vote_rate_vdd(clk, rate);
 		if (rc)
@@ -696,7 +696,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 		goto err_set_rate;
 	clk->rate = rate;
 
-	/* Release vdd requirements for starting frequency. */
+	// Release vdd requirements for starting frequency.
 	if (clk->prepare_count)
 		unvote_rate_vdd(clk, start_rate);
 
@@ -718,14 +718,14 @@ err_set_rate:
 	if (clk->prepare_count)
 		unvote_rate_vdd(clk, rate);
 err_vote_vdd:
-	/* clk->rate is still the old rate. So, pass the new rate instead. */
+	// clk->rate is still the old rate. So, pass the new rate instead.
 	if (clk->ops->post_set_rate)
 		clk->ops->post_set_rate(clk, rate);
 	goto out;
 }
-EXPORT_SYMBOL(clk_set_rate);
+EXPORT_SYMBOL(clk_set_rate);*/
 
-long clk_round_rate(struct clk *clk, unsigned long rate)
+/*long clk_round_rate(struct clk *clk, unsigned long rate)
 {
 	long rrate;
 	unsigned long fmax = 0, i;
@@ -750,9 +750,9 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
 		return -EINVAL;
 	return rrate;
 }
-EXPORT_SYMBOL(clk_round_rate);
+EXPORT_SYMBOL(clk_round_rate);*/
 
-int clk_set_max_rate(struct clk *clk, unsigned long rate)
+/*int clk_set_max_rate(struct clk *clk, unsigned long rate)
 {
 	if (IS_ERR_OR_NULL(clk))
 		return -EINVAL;
@@ -762,7 +762,7 @@ int clk_set_max_rate(struct clk *clk, unsigned long rate)
 
 	return clk->ops->set_max_rate(clk, rate);
 }
-EXPORT_SYMBOL(clk_set_max_rate);
+EXPORT_SYMBOL(clk_set_max_rate);*/
 
 int parent_to_src_sel(struct clk_src *parents, int num_parents, struct clk *p)
 {
@@ -783,7 +783,7 @@ int clk_get_parent_sel(struct clk *c, struct clk *parent)
 }
 EXPORT_SYMBOL(clk_get_parent_sel);
 
-int clk_set_parent(struct clk *clk, struct clk *parent)
+/*int clk_set_parent(struct clk *clk, struct clk *parent)
 {
 	int rc = 0;
 	if (IS_ERR_OR_NULL(clk))
@@ -804,16 +804,16 @@ out:
 
 	return rc;
 }
-EXPORT_SYMBOL(clk_set_parent);
+EXPORT_SYMBOL(clk_set_parent);*/
 
-struct clk *clk_get_parent(struct clk *clk)
+/*struct clk *clk_get_parent(struct clk *clk)
 {
 	if (IS_ERR_OR_NULL(clk))
 		return NULL;
 
 	return clk->parent;
 }
-EXPORT_SYMBOL(clk_get_parent);
+EXPORT_SYMBOL(clk_get_parent);*/
 
 int clk_set_flags(struct clk *clk, unsigned long flags)
 {
